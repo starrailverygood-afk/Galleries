@@ -662,54 +662,34 @@ async function loadGalleryData() {
 // 為每個圖庫設置封面圖片 - 使用實際的圖片檔案
 function processGalleryCovers() {
     for (const gallery of galleryDatabase) {
-        // 確保圖庫有基本欄位
-        if (!gallery.id) {
-            console.warn('Gallery missing id:', gallery);
-            // 嘗試生成一個 ID
-            gallery.id = `gallery-${Math.random().toString(36).substr(2, 9)}`;
-        }
-        
-        if (!gallery.name) {
-            console.warn('Gallery missing name, using default');
-            gallery.name = '未命名圖庫';
-        }
-        
         // 設置顏色和縮寫
         gallery.color = getGalleryColor(gallery.id);
         gallery.initials = getGalleryInitials(gallery.name);
         
         // 如果有 imageFiles，使用第一張圖片作為封面
-        if (gallery.imageFiles && Array.isArray(gallery.imageFiles) && gallery.imageFiles.length > 0) {
+        if (gallery.imageFiles && gallery.imageFiles.length > 0) {
+            // 修正路徑：確保正確的圖片路徑
             const firstImage = gallery.imageFiles[0];
             
-            // 確保 firstImage 是字符串
-            if (typeof firstImage !== 'string') {
-                console.warn('First image is not string:', gallery.name, firstImage);
-                gallery.coverImage = createPlaceholderSVG(gallery, 1);
-                gallery.fullImagePaths = [];
-                continue;
-            }
-            
             // 路徑構建
-            let basePath;
-            if (gallery.folderPath && typeof gallery.folderPath === 'string') {
-                basePath = gallery.folderPath.replace(/\/$/, '');
+            if (gallery.folderPath) {
+                // 確保路徑結尾沒有斜杠
+                const basePath = gallery.folderPath.replace(/\/$/, '');
+                gallery.coverImage = `${basePath}/${firstImage}`;
+                
+                // 為所有圖片檔案建立完整路徑
+                gallery.fullImagePaths = gallery.imageFiles.map(file => 
+                    `${basePath}/${file}`
+                );
             } else {
-                basePath = `galleries/${gallery.name}`;
+                // 後備方案：使用 galleries/圖庫名稱/ 作為路徑
+                gallery.coverImage = `galleries/${gallery.name}/${firstImage}`;
+                gallery.fullImagePaths = gallery.imageFiles.map(file => 
+                    `galleries/${gallery.name}/${file}`
+                );
             }
             
-            // 構建完整的圖片路徑
-            gallery.coverImage = `${basePath}/${firstImage}`;
-            
-            // 為所有圖片檔案建立完整路徑
-            gallery.fullImagePaths = gallery.imageFiles.map(file => {
-                if (typeof file === 'string') {
-                    return `${basePath}/${file}`;
-                }
-                console.warn('Invalid image file:', file);
-                return '';
-            }).filter(path => path !== '');
-            
+            console.log(`圖庫 ${gallery.name}: 封面圖片路徑 = ${gallery.coverImage}`);
         } else {
             // 如果沒有圖片，使用佔位圖
             console.warn(`圖庫 ${gallery.name}: 沒有圖片檔案，使用佔位圖`);
@@ -721,38 +701,13 @@ function processGalleryCovers() {
 
 // 根據 ID 獲取顏色
 function getGalleryColor(galleryId) {
-    if (!galleryId) {
-        console.warn('galleryId is undefined, using default color');
-        return PLACEHOLDER_COLORS[0];
-    }
-    
-    try {
-        // 提取 ID 中的數字部分
-        const idMatch = galleryId.match(/\d+/);
-        if (idMatch) {
-            const idNum = parseInt(idMatch[0]) || 0;
-            return PLACEHOLDER_COLORS[idNum % PLACEHOLDER_COLORS.length];
-        }
-        
-        // 如果沒有數字，使用 hash 生成
-        let hash = 0;
-        for (let i = 0; i < galleryId.length; i++) {
-            hash = galleryId.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const index = Math.abs(hash) % PLACEHOLDER_COLORS.length;
-        return PLACEHOLDER_COLORS[index];
-        
-    } catch (error) {
-        console.error('Error in getGalleryColor:', error);
-        return PLACEHOLDER_COLORS[0];
-    }
+    const idNum = parseInt(galleryId.replace('gallery-', '')) || 0;
+    return PLACEHOLDER_COLORS[idNum % PLACEHOLDER_COLORS.length];
 }
 
 // 獲取圖庫名稱的縮寫（用於佔位圖）
 function getGalleryInitials(name) {
-    if (!name || typeof name !== 'string') {
-        return '?';
-    }
+    if (!name) return '?';
     
     // 取前2-3個字符
     if (name.length <= 3) return name;
@@ -766,9 +721,7 @@ function getGalleryInitials(name) {
     // 如果是英文或混合，取單詞首字母
     const words = name.split(/[-_\s]+/);
     if (words.length >= 2) {
-        const first = words[0].charAt(0) || '';
-        const second = words[1].charAt(0) || '';
-        return (first + second).toUpperCase();
+        return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
     }
     
     return name.substring(0, 2).toUpperCase();
