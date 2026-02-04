@@ -10,10 +10,18 @@ let autoPlaySpeed = 10000; // 初始10秒
 let isFsAutoPlaying = false;
 let progressStartTime = 0;
 
-// 直接嵌入你的 JSON 數據
-const LOCAL_GALLERY_DATA = [[
+const PLACEHOLDER_COLORS = [
+    '#3b82f6', // 藍
+    '#8b5cf6', // 紫
+    '#10b981', // 綠
+    '#f59e0b', // 黃
+    '#ef4444', // 紅
+    '#ec4899'  // 粉
+];
+
+const LOCAL_GALLERY_DATA = [
   {
-    "id": "gallery-003",
+    "id": "gallery-017",
     "name": "亞絲娜-1-正常",
     "folderPath": "galleries/亞絲娜-1-正常",
     "character": [
@@ -567,42 +575,89 @@ const LOCAL_GALLERY_DATA = [[
       "0868_98441577_11.png"
     ]
   }
-]];;;;
-
-
-// 顏色列表用於生成佔位圖
-const PLACEHOLDER_COLORS = [
-    '#3b82f6', // 藍
-    '#8b5cf6', // 紫
-    '#10b981', // 綠
-    '#f59e0b', // 黃
-    '#ef4444', // 紅
-    '#ec4899'  // 粉
 ];
 
 // DOM 載入完成後初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 隱藏載入動畫
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'none';
     
     try {
-        // 使用本地數據
-        galleryDatabase = LOCAL_GALLERY_DATA;
+        console.log('開始初始化...');
+        
+        // 嘗試載入外部 JSON，失敗時使用本地數據
+        try {
+            await loadGalleryData();
+            console.log('成功載入外部 JSON 數據，共', galleryDatabase.length, '個圖庫');
+        } catch (error) {
+            console.log('無法載入外部 JSON，使用本地數據');
+            galleryDatabase = LOCAL_GALLERY_DATA;
+        }
         
         // 為每個圖庫設置封面圖片
         processGalleryCovers();
+        console.log('封面圖片處理完成');
         
         // 初始化介面
         updateStats();
         updateTagFilters();
         renderGalleryList(galleryDatabase);
         
+        console.log('頁面初始化完成');
+        
     } catch (error) {
         console.error('初始化失敗:', error);
         showError('初始化失敗: ' + error.message);
     }
 });
+
+// 動態載入圖庫數據
+async function loadGalleryData() {
+    try {
+        console.log('正在嘗試載入 galleries.json...');
+        
+        // 從 JSON 檔案載入數據
+        const response = await fetch('galleries.json');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('成功獲取 JSON 數據');
+        
+        // 處理數據格式
+        if (Array.isArray(data)) {
+            galleryDatabase = data;
+        } else if (typeof data === 'object' && data !== null) {
+            // 如果是對象，轉換為數組
+            galleryDatabase = Object.values(data);
+        } else {
+            throw new Error('數據格式不正確');
+        }
+        
+        console.log(`成功載入 ${galleryDatabase.length} 個圖庫`);
+        
+        // 確保每個圖庫都有必要的欄位
+        galleryDatabase.forEach((gallery, index) => {
+            if (!gallery.id) gallery.id = `gallery-${index + 1}`;
+            if (!gallery.folderPath && gallery.name) {
+                gallery.folderPath = `galleries/${gallery.name}`;
+            }
+            if (!gallery.imageFiles || !Array.isArray(gallery.imageFiles)) {
+                gallery.imageFiles = [];
+            }
+            if (!gallery.fileCount && gallery.imageFiles) {
+                gallery.fileCount = gallery.imageFiles.length;
+            }
+        });
+        
+    } catch (error) {
+        console.error('載入 JSON 失敗:', error);
+        throw error; // 重新拋出錯誤，讓上層處理
+    }
+}
 
 // 為每個圖庫設置封面圖片 - 使用實際的圖片檔案
 function processGalleryCovers() {
@@ -613,16 +668,33 @@ function processGalleryCovers() {
         
         // 如果有 imageFiles，使用第一張圖片作為封面
         if (gallery.imageFiles && gallery.imageFiles.length > 0) {
-            // GitHub Pages 使用相對路徑
-            gallery.coverImage = `galleries/${gallery.name}/${gallery.imageFiles[0]}`;
+            // 修正路徑：確保正確的圖片路徑
+            const firstImage = gallery.imageFiles[0];
             
-            // 為所有圖片檔案建立完整相對路徑
-            gallery.fullImagePaths = gallery.imageFiles.map(file => 
-                `galleries/${gallery.name}/${file}`
-            );
+            // 路徑構建
+            if (gallery.folderPath) {
+                // 確保路徑結尾沒有斜杠
+                const basePath = gallery.folderPath.replace(/\/$/, '');
+                gallery.coverImage = `${basePath}/${firstImage}`;
+                
+                // 為所有圖片檔案建立完整路徑
+                gallery.fullImagePaths = gallery.imageFiles.map(file => 
+                    `${basePath}/${file}`
+                );
+            } else {
+                // 後備方案：使用 galleries/圖庫名稱/ 作為路徑
+                gallery.coverImage = `galleries/${gallery.name}/${firstImage}`;
+                gallery.fullImagePaths = gallery.imageFiles.map(file => 
+                    `galleries/${gallery.name}/${file}`
+                );
+            }
+            
+            console.log(`圖庫 ${gallery.name}: 封面圖片路徑 = ${gallery.coverImage}`);
         } else {
             // 如果沒有圖片，使用佔位圖
+            console.warn(`圖庫 ${gallery.name}: 沒有圖片檔案，使用佔位圖`);
             gallery.coverImage = createPlaceholderSVG(gallery, 1);
+            gallery.fullImagePaths = [];
         }
     }
 }
@@ -635,6 +707,8 @@ function getGalleryColor(galleryId) {
 
 // 獲取圖庫名稱的縮寫（用於佔位圖）
 function getGalleryInitials(name) {
+    if (!name) return '?';
+    
     // 取前2-3個字符
     if (name.length <= 3) return name;
     
@@ -665,19 +739,32 @@ function createPlaceholderSVG(gallery, index = 1) {
     return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
-// 生成佔位圖片 HTML（純 CSS）
-function generatePlaceholderHTML(gallery) {
-    const color = gallery.color || PLACEHOLDER_COLORS[0];
-    const initials = gallery.initials || '圖';
+// 渲染空狀態
+function renderEmptyState(message = '無法載入圖庫數據') {
+    const container = document.getElementById('galleryView');
+    if (!container) return;
     
-    return `
-        <div class="placeholder-cover" style="background-color: ${color}">
-            <div class="placeholder-text">${initials}</div>
+    container.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>
+            <h3>錯誤</h3>
+            <p>${message}</p>
+            <div style="margin-top: 20px;">
+                <p>請確認：</p>
+                <ol style="text-align: left; margin: 10px auto; max-width: 300px;">
+                    <li>galleries.json 檔案是否存在</li>
+                    <li>JSON 格式是否正確</li>
+                    <li>圖片檔案是否在正確位置</li>
+                </ol>
+            </div>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px;">
+                <i class="fas fa-redo"></i> 重新載入
+            </button>
         </div>
     `;
 }
 
-// 更新統計資訊（保持不變）
+// 更新統計資訊
 function updateStats() {
     const totalGalleries = document.getElementById('totalGalleries');
     const totalImages = document.getElementById('totalImages');
@@ -692,7 +779,7 @@ function updateStats() {
     }
 }
 
-// 更新標籤篩選器（保持不變）
+// 更新標籤篩選器
 function updateTagFilters() {
     // 收集所有角色標籤
     const allCharacters = new Set();
@@ -719,7 +806,7 @@ function updateTagFilters() {
     updateTagFilterSection('custom-tags', allTags, 'tags');
 }
 
-// 更新標籤篩選器部分（保持不變）
+// 更新標籤篩選器部分
 function updateTagFilterSection(containerId, tagSet, type) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -749,7 +836,7 @@ function updateTagFilterSection(containerId, tagSet, type) {
     });
 }
 
-// 更新活動篩選器（保持不變）
+// 更新活動篩選器
 function updateActiveFilters() {
     activeFilters = { character: [], tags: [] };
     
@@ -762,10 +849,10 @@ function updateActiveFilters() {
     });
 }
 
-// 篩選圖庫（保持不變）
+// 篩選圖庫
 function filterGalleries() {
     if (!galleryDatabase.length) {
-        renderEmptyState();
+        renderEmptyState('沒有可顯示的圖庫');
         return;
     }
     
@@ -794,7 +881,7 @@ function filterGalleries() {
     renderGalleryList(filtered);
 }
 
-// 渲染圖庫列表（修改圖片顯示部分）
+// 渲染圖庫列表
 function renderGalleryList(galleries) {
     const container = document.getElementById('galleryView');
     if (!container) return;
@@ -852,6 +939,8 @@ function renderGalleryList(galleries) {
 
 // 處理封面圖片加載錯誤
 window.handleCoverImageError = function(imgElement, galleryId) {
+    console.error(`圖片加載失敗: ${imgElement.src}`);
+    
     const gallery = galleryDatabase.find(g => g.id === galleryId);
     if (!gallery) return;
     
@@ -863,16 +952,7 @@ window.handleCoverImageError = function(imgElement, galleryId) {
     }
 };
 
-// 清除所有篩選（保持不變）
-window.clearAllFilters = function() {
-    activeFilters = { character: [], tags: [] };
-    document.querySelectorAll('.tag.selected').forEach(tag => {
-        tag.classList.remove('selected');
-    });
-    renderGalleryList(galleryDatabase);
-};
-
-// 顯示錯誤訊息（保持不變）
+// 錯誤處理
 function showError(message) {
     const container = document.getElementById('galleryView');
     if (!container) return;
@@ -882,11 +962,22 @@ function showError(message) {
             <i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>
             <h3>錯誤</h3>
             <p>${message}</p>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px;">
+                <i class="fas fa-redo"></i> 重新載入
+            </button>
         </div>
     `;
 }
 
-// 打開圖庫瀏覽器
+// 清除所有篩選
+window.clearAllFilters = function() {
+    activeFilters = { character: [], tags: [] };
+    document.querySelectorAll('.tag.selected').forEach(tag => {
+        tag.classList.remove('selected');
+    });
+    renderGalleryList(galleryDatabase);
+};
+
 window.openGalleryViewer = function(galleryId) {
     const gallery = galleryDatabase.find(g => g.id === galleryId);
     if (!gallery) return;

@@ -12,7 +12,7 @@ from typing import Dict, List, Set
 
 # 設定檔案路徑
 GALLERIES_DIR = Path("galleries")
-DATA_FILE = Path("scan_output/galleries.json")
+DATA_FILE = Path("galleries.json")
 
 def ensure_directories():
     """確保必要的目錄存在"""
