@@ -11,179 +11,14 @@ let isFsAutoPlaying = false;
 let progressStartTime = 0;
 
 // 直接嵌入你的 JSON 數據
-const LOCAL_GALLERY_DATA = [
-  {
-    "id": "gallery-001",
-    "name": "1",
-    "folderPath": "1",
-    "character": [
-      "1"
-    ],
-    "tags": [],
-    "fileCount": 272,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-002",
-    "name": "甘雨-1-DIY",
-    "folderPath": "甘雨-1-DIY",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "1",
-      "DIY"
-    ],
-    "fileCount": 20,
-    "imageFiles": []
-  },
+const LOCAL_GALLERY_DATA = [[
   {
     "id": "gallery-003",
-    "name": "甘雨-2-咬",
-    "folderPath": "甘雨-2-咬",
+    "name": "亞絲娜-1-正常",
+    "folderPath": "galleries/亞絲娜-1-正常",
     "character": [
-      "甘雨"
+      "亞絲娜"
     ],
-    "tags": [
-      "2",
-      "咬"
-    ],
-    "fileCount": 27,
-    "imageFiles": []
-  }
-];
-    "tags": [],
-    "fileCount": 272,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-002",
-    "name": "甘雨-1-DIY",
-    "folderPath": "甘雨-1-DIY",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "1",
-      "DIY"
-    ],
-    "fileCount": 20,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-003",
-    "name": "甘雨-2-咬",
-    "folderPath": "甘雨-2-咬",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "2",
-      "咬"
-    ],
-    "fileCount": 27,
-    "imageFiles": []
-  }
-];
-    "tags": [],
-    "fileCount": 272,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-002",
-    "name": "甘雨-1-DIY",
-    "folderPath": "甘雨-1-DIY",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "1",
-      "DIY"
-    ],
-    "fileCount": 20,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-003",
-    "name": "甘雨-2-咬",
-    "folderPath": "甘雨-2-咬",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "2",
-      "咬"
-    ],
-    "fileCount": 27,
-    "imageFiles": []
-  }
-];
-    "tags": [],
-    "fileCount": 272,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-002",
-    "name": "甘雨-1-DIY",
-    "folderPath": "甘雨-1-DIY",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "1",
-      "DIY"
-    ],
-    "fileCount": 20,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-003",
-    "name": "甘雨-2-咬",
-    "folderPath": "甘雨-2-咬",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "2",
-      "咬"
-    ],
-    "fileCount": 27,
-    "imageFiles": []
-  }
-];
-    "tags": [],
-    "fileCount": 272,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-002",
-    "name": "甘雨-1-DIY",
-    "folderPath": "甘雨-1-DIY",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "1",
-      "DIY"
-    ],
-    "fileCount": 20,
-    "imageFiles": []
-  },
-  {
-    "id": "gallery-003",
-    "name": "甘雨-2-咬",
-    "folderPath": "甘雨-2-咬",
-    "character": [
-      "甘雨"
-    ],
-    "tags": [
-      "2",
-      "咬"
-    ],
-    "fileCount": 27,
-    "imageFiles": []
-  }
-];
     "tags": [
       "正常"
     ],
@@ -320,6 +155,31 @@ const LOCAL_GALLERY_DATA = [
       "1428_13.jpg",
       "1429_14.jpg",
       "1430_15.jpg"
+    ]
+  },
+  {
+    "id": "gallery-016",
+    "name": "漢庫克-1-黑鬍子",
+    "folderPath": "galleries/漢庫克-1-黑鬍子",
+    "character": [
+      "漢庫克"
+    ],
+    "tags": [
+      "強暴"
+    ],
+    "fileCount": 11,
+    "imageFiles": [
+      "1.jpg",
+      "10.jpg",
+      "11.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg",
+      "7.jpg",
+      "8.jpg",
+      "9.jpg"
     ]
   },
   {
@@ -707,7 +567,8 @@ const LOCAL_GALLERY_DATA = [
       "0868_98441577_11.png"
     ]
   }
-];
+]];;;
+
 
 // 顏色列表用於生成佔位圖
 const PLACEHOLDER_COLORS = [
