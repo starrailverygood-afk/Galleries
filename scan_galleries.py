@@ -103,11 +103,11 @@ def get_user_input_for_gallery(gallery_name: str, existing_data: Dict[str, Dict]
     image_files = get_image_files(folder_path)
     file_count = len(image_files)
     
-    print(f"📷 偵測到 {file_count} 張圖片")
+    print(f" 偵測到 {file_count} 張圖片")
     
     # 顯示前幾張圖片名稱
     if image_files:
-        print("📁 圖片檔案:")
+        print(" 圖片檔案:")
         for i, filename in enumerate(image_files[:5], 1):
             print(f"  {i}. {filename}")
         if len(image_files) > 5:
@@ -115,16 +115,16 @@ def get_user_input_for_gallery(gallery_name: str, existing_data: Dict[str, Dict]
     
     # 獲取角色標籤
     while True:
-        characters_input = input("👤 請輸入角色標籤（多個用逗號分隔，必填）: ").strip()
+        characters_input = input(" 請輸入角色標籤（多個用逗號分隔，必填）: ").strip()
         if characters_input:
             characters = [c.strip() for c in characters_input.split(',')]
             characters = [c for c in characters if c]  # 移除空值
             if characters:
                 break
-        print("❌ 錯誤: 角色標籤不能為空")
+        print(" 錯誤: 角色標籤不能為空")
     
     # 獲取其他標籤
-    tags_input = input("🏷️  請輸入其他標籤（多個用.分隔）: ").strip()
+    tags_input = input("  請輸入其他標籤（多個用.分隔）: ").strip()
     tags = [t.strip() for t in tags_input.split('.')] if tags_input else []
     tags = [t for t in tags if t]  # 移除空值
     
@@ -148,7 +148,7 @@ def update_galleries_data(existing: Dict[str, Dict], current_folders: List[str])
     # 處理已刪除的圖庫
     deleted_galleries = set(existing.keys()) - set(current_folders)
     if deleted_galleries:
-        print(f"\n🗑️  發現已刪除的圖庫 ({len(deleted_galleries)} 個):")
+        print(f"\n  發現已刪除的圖庫 ({len(deleted_galleries)} 個):")
         for gallery in sorted(deleted_galleries):
             print(f"  • {gallery}")
     
@@ -197,11 +197,11 @@ def update_galleries_data(existing: Dict[str, Dict], current_folders: List[str])
                 removed = set(old_image_files) - set(new_image_files)
                 
                 if added:
-                    print(f"📥 {folder_name}: 新增 {len(added)} 張圖片")
+                    print(f" {folder_name}: 新增 {len(added)} 張圖片")
                 if removed:
-                    print(f"📤 {folder_name}: 移除 {len(removed)} 張圖片")
+                    print(f" {folder_name}: 移除 {len(removed)} 張圖片")
             elif old_file_count != new_file_count:
-                print(f"📊 {folder_name}: 圖片數量更新 ({old_file_count} → {new_file_count})")
+                print(f" {folder_name}: 圖片數量更新 ({old_file_count} → {new_file_count})")
             
             updated_data.append(gallery_data)
         else:
@@ -217,8 +217,8 @@ def save_data(data: List[Dict]):
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     
-    print(f"\n💾 資料已儲存到 {DATA_FILE}")
-    print(f"📁 總共 {len(data)} 個圖庫")
+    print(f"\n 資料已儲存到 {DATA_FILE}")
+    print(f" 總共 {len(data)} 個圖庫")
 
 def print_summary(data: List[Dict], current_folders: List[str], existing: Dict[str, Dict]):
     """顯示掃描結果摘要"""
@@ -227,7 +227,7 @@ def print_summary(data: List[Dict], current_folders: List[str], existing: Dict[s
     unchanged_count = len(set(current_folders) & set(existing.keys()))
     
     print(f"\n{'='*60}")
-    print("📊 掃描結果摘要")
+    print("掃描結果摘要")
     print(f"{'='*60}")
     print(f"• 總圖庫數量: {len(data)} 個")
     print(f"• 新增圖庫: {new_count} 個")
@@ -245,7 +245,7 @@ def print_summary(data: List[Dict], current_folders: List[str], existing: Dict[s
         all_characters.update(gallery['character'])
         all_tags.update(gallery['tags'])
     
-    print(f"\n🏷️  標籤統計:")
+    print(f"\n  標籤統計:")
     print(f"  • 角色標籤: {len(all_characters)} 個")
     print(f"  • 其他標籤: {len(all_tags)} 個")
     
@@ -262,23 +262,23 @@ def print_summary(data: List[Dict], current_folders: List[str], existing: Dict[s
 
 def main():
     """主函數"""
-    print("🖼️  圖庫掃描腳本 (加強版)")
-    print("📝 功能: 掃描圖庫並儲存所有圖片檔案名稱")
-    print(f"📂 掃描目錄: {GALLERIES_DIR.absolute()}")
+    print("  圖庫掃描腳本 (加強版)")
+    print(" 功能: 掃描圖庫並儲存所有圖片檔案名稱")
+    print(f" 掃描目錄: {GALLERIES_DIR.absolute()}")
     
     # 確保目錄存在
     ensure_directories()
     
     # 掃描現有資料夾
-    print(f"\n🔍 正在掃描 {GALLERIES_DIR}/ 資料夾...")
+    print(f"\n 正在掃描 {GALLERIES_DIR}/ 資料夾...")
     current_folders = scan_gallery_folders()
     
     if not current_folders:
-        print("❌ 錯誤: 沒有找到任何圖庫資料夾")
+        print(" 錯誤: 沒有找到任何圖庫資料夾")
         print(f"請將圖庫資料夾放置在 {GALLERIES_DIR.absolute()}/")
         sys.exit(1)
     
-    print(f"✅ 找到 {len(current_folders)} 個圖庫資料夾:")
+    print(f" 找到 {len(current_folders)} 個圖庫資料夾:")
     for i, folder in enumerate(current_folders, 1):
         count = count_images_in_folder(folder)
         print(f"  {i:2d}. {folder} ({count} 張圖片)")
@@ -286,7 +286,7 @@ def main():
     # 載入現有資料
     existing_data = load_existing_data()
     if existing_data:
-        print(f"\n📄 載入現有資料: {len(existing_data)} 個圖庫記錄")
+        print(f"\n 載入現有資料: {len(existing_data)} 個圖庫記錄")
     
     # 更新資料
     updated_data = update_galleries_data(existing_data, current_folders)
@@ -295,25 +295,25 @@ def main():
     print_summary(updated_data, current_folders, existing_data)
     
     # 確認儲存
-    print(f"\n💾 是否要儲存更新到 {DATA_FILE}?")
-    print("⚠️  注意: 這將覆寫現有的檔案")
-    response = input("📝 輸入 'y' 確認，其他任意鍵取消: ").strip().lower()
+    print(f"\n 是否要儲存更新到 {DATA_FILE}?")
+    print("  注意: 這將覆寫現有的檔案")
+    response = input(" 輸入 'y' 確認，其他任意鍵取消: ").strip().lower()
     
     if response == 'y':
         save_data(updated_data)
-        print("\n🎉 完成")
-        print("📋 每個圖庫的圖片檔案名稱已儲存在 'imageFiles' 欄位中")
+        print("\n 完成")
+        print(" 每個圖庫的圖片檔案名稱已儲存在 'imageFiles' 欄位中")
     else:
-        print("\n❌ 已取消，資料未儲存")
+        print("\n 已取消，資料未儲存")
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n⏹️  掃描已取消")
+        print("\n\n  掃描已取消")
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ 錯誤: {type(e).__name__}: {e}")
+        print(f"\n 錯誤: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
